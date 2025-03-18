@@ -7,7 +7,7 @@ const userSchema =new mongoose.Schema(
             required: true,
         },
         imageUrl:{
-            type:string,
+            type:String,
             required:true,
         },
         clerkId:{
