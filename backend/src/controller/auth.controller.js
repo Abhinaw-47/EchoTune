@@ -1,5 +1,5 @@
 import { User } from "../models/user.model.js";
-export const authCallback=async(req,res)=>{
+export const authCallback=async(req,res,next)=>{
     try{
      const {id,firstName,lastName,imageUrl}=req.body;
      const user=await User.findOne({id})
@@ -14,6 +14,6 @@ export const authCallback=async(req,res)=>{
  
  } catch(error){
             console.og("error in auth callback",error)
-            res.status(500).json({success:false,message:"internal server error"})
+           next(error)
         }
  }
