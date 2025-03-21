@@ -1,14 +1,15 @@
  import {Song} from '../models/song.model.js'
  import {Album} from "../models/album.model.js"
+import cloudinary from '../lib/cloudinary.js';
 
-const uploadToCloduinary=async(file)=>{
+const uploadToCloudinary=async(file)=>{
     try{
-        const result =await uploadToCloduinary.uploader.upload(file.tempFilePath,{
+        const result =await cloudinary.uploader.upload(file.tempFilePath,{
             resource_type:"auto",
         })
         return result.secure_url;
     }catch(error){
-        console.log("Error in uploadToCloduinary",error);
+        console.log("Error in uploadToCloudinary",error);
         throw new Error("Error uploading to cloudinary");
     }
 }
@@ -22,8 +23,8 @@ export const createSong=async (req,res,next)=>{
         const {title,artist,albumId,duration}=req.body
         const audioFile=req.files.audioFile
         const imageFile=req.files.imageFile
-        const audioUrl=await uploadToCloduinary(audioFile);
-        const imageUrl=await uploadToCloduinary(imageFile);
+        const audioUrl=await uploadToCloudinary(audioFile);
+        const imageUrl=await uploadToCloudinary(imageFile);
 
 
         const song=new Song({
@@ -40,7 +41,7 @@ export const createSong=async (req,res,next)=>{
                 $push:{songs:song._id},
             });
          }
-         req.status(201).json(song);
+         res.status(201).json(song);
        
     }catch(error){
         console.log("Error in CreateSong",error)
@@ -48,4 +49,59 @@ export const createSong=async (req,res,next)=>{
          
     }
     
+}
+
+export const deleteSong=async(req,res,next)=>{
+ try{
+    const {id} =req.params
+    const song =await Song.findById(id)
+//checking song for album
+    if(song.albumId){
+        await Album.findByIdAndUpdate(song.albumId,{
+            $pull:{songs:song._id},
+        })
+ }
+ await Song.findByIdAndDelete(id)
+    res.status(200).json({message:"Song deleted successfully"})
+}catch(error){
+    console.log("Error in deleteSong",error)
+    next(error)
+}
+}
+
+export const createAlbum=async(req,res,next)=>{
+    try{
+        if(!req.files || !req.files.imageFile){
+            return res.status(400).json({message:"Please upload the image file"})
+        }
+        const {title,artist,releaseYear}=req.body
+        const imageFile=req.files.imageFile
+        const imageUrl=await uploadToCloudinary(imageFile);
+        const album=new Album({
+            title,
+            artist,
+            releaseYear,
+            imageUrl,
+        })
+        await album.save()
+        res.status(201).json(album);
+    }catch(error){
+        console.log("Error in createAlbum",error)
+        next(error)
+    }
+}
+
+export const deleteAlbum=async(req,res,next)=>{
+    try{
+        const {id}=req.params;
+        await Song.deleteMany({albumId:id})
+        await Album.findByIdAndDelete(id)
+        res.status(200).json({message:"Album deleted successfully"})
+    }catch(error){
+        console.log("Error in deleteAlbum",error)
+        next(error)
+    }
+}
+export const checkAdmin=async(req,res,next)=>{
+    res.status(200).json({admin:true})
 }

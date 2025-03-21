@@ -17,7 +17,7 @@ export const requireAdmin=async(req,res,next)=>{
    next();
  }
  catch(error){
-     return res.status(401).json({message:"something went wrong"})
+     next(error)
  }
 
 }
