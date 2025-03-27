@@ -132,8 +132,8 @@ const seedDatabase = async () => {
 		// Create albums with references to song IDs
 		const albums = [
 			{
-				title: "Urban Nights",
-				artist: "Various Artists",
+				title: "Starboy",
+				artist: "Weekend & Daft Punk",
 				imageUrl: "/albums/1.jpg",
 				releaseYear: 2024,
 				songs: createdSongs.slice(0, 4).map((song) => song._id),
